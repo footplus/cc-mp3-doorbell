@@ -5,7 +5,7 @@
  */
 #include <SoftwareSerial.h>
 
-SoftwareSerial somo(10, 11); // RX, TX
+SoftwareSerial somo(3, 2); // RX, TX
 unsigned char play_track1[] = { 0x7e, 0x03, 0x00, 0x00, 0x01, 0xFF, 0xFC, 0xEF };
 unsigned char play_track2[] = { 0x7e, 0x03, 0x00, 0x00, 0x02, 0xFF, 0xFB, 0xEF };
 
@@ -22,8 +22,11 @@ unsigned long sample_time = 0;      // the last time the output pin was sampled
 int debounce_count = 5;     // number of millis/samples to consider before declaring a debounced input
 
 
-// Door bell input is 12 (active low)
-int button = 12;
+// Door bell input is 4 (active low)
+int button = 4;
+
+// Button echo LED (active high)
+int button_echo = 13;
 
 void setup() {
  
@@ -34,7 +37,9 @@ void setup() {
   somo_set_sound(23);
 
   // set our input pin (bell button)
-  pinMode(button, INPUT);
+  pinMode(button, INPUT_PULLUP);
+  pinMode(button_echo, OUTPUT);
+  digitalWrite(button_echo, !button_state);
 
    Serial.begin(9600);
    while (!Serial) {
@@ -99,6 +104,8 @@ void loop()
   if(millis() != sample_time)
   {
     reading = digitalRead(button);
+    // Update the led state
+    digitalWrite(button_echo, !button_state);
 
     if(reading == button_state && counter > 0)
     {
